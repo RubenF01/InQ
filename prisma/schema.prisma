@@ -7,5 +7,100 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("process.env.DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement()) 
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  profile   UserProfile?
+  appointments Appointment[]
+}
+
+model UserProfile {
+  id        Int      @id @default(autoincrement()) 
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  phone     String?
+  address   Address?
+}
+
+model Business {
+  id        Int      @id @default(autoincrement()) 
+  name      String   @unique
+  latitude  Float
+  longitude Float
+  employees Employee[]
+  services  Service[]
+  address   Address?
+  businessProfile BusinessProfile?
+}
+
+model BusinessProfile {
+  id        Int      @id @default(autoincrement()) 
+  business  Business @relation(fields: [businessId], references: [id])
+  businessId Int     @unique
+  email     String
+  phone     String?
+  address   String?
+}
+
+model Service {
+  id        Int      @id @default(autoincrement()) 
+  name      String   
+  duration  Int
+  price     Int
+  availability  Boolean
+  description   String?
+  business  Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  appointments Appointment[]
+  employees  Employee[]
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement()) 
+  firstName String   
+  lastName  String
+  business  Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  appointments Appointment[]
+  services  Service[]
+}
+
+model Appointment {
+  id           Int      @id @default(autoincrement()) 
+  startDate    DateTime
+  endDate      DateTime
+  duration     Int
+  service      Service  @relation(fields: [serviceId], references: [id])
+  serviceId    Int
+  status       AppointmentStatus[]
+  user         User[]
+  employee     Employee[]
+}
+
+model AppointmentStatus {
+  id        Int      @id @default(autoincrement()) 
+  name      String   @unique
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId Int
+}
+
+model Address {
+  id        Int      @id @default(autoincrement()) 
+  street    String
+  city      String 
+  state     String
+  zip       String
+  business  Business? @relation(fields: [businessId], references: [id])
+  businessId Int? @unique
+  user      UserProfile?    @relation(fields: [userId], references: [id])
+  userId    Int? @unique 
+}
+
+
+
